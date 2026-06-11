@@ -18,14 +18,14 @@ Use this skill to implement highly realistic, refracting liquid glass buttons, t
     id="disp" 
     in="SourceGraphic" 
     in2="map" 
-    scale="0.22" 
+    scale="0.32" 
     xChannelSelector="R" 
     yChannelSelector="G" 
   />
   ```
 - **Scale Optimization**: Adjust the `scale` based on the bounding box size of the element:
-  - For small interactive elements (e.g., buttons, navigation switchers, active slider pills), keep the `scale` between `0.20` and `0.25` for highly active, visible refraction.
-  - For large containers and layout cards, keep the `scale` between `0.05` and `0.08` to prevent massive distortion of child text content while retaining beautiful edge refraction.
+  - For small interactive elements (e.g., buttons, navigation switchers, active slider pills), keep the `scale` between `0.30` and `0.35` for highly active, visible refraction.
+  - For large containers and layout cards, keep the `scale` between `0.08` and `0.12` to prevent massive distortion of child text content while retaining beautiful edge refraction.
 
 ### 2. CSS Backdrop Filter Configuration
 - **CRITICAL**: The CSS `backdrop-filter` property must reference the custom SVG filter without any blur token to preserve transparency and prevent frostiness (e.g., `backdrop-filter: url(#filter-id) saturate(150%);`).
@@ -58,5 +58,15 @@ box-shadow:
 ```
 
 ### 6. Interactive Gestures and Snapping transitions
-- **Hold Gestures**: During active drag or press events, apply a slight scale squish (e.g., `transform: scale(0.94, 0.94)`) and a subtle fluid pulse animation to simulate liquid tension.
+- **Hold & Move Expansion (Apple-style Ballooning)**: During active touch, hold, or drag-glide events, expand the active glass lens outward to simulate water tension and bubble ballooning (e.g., `transform: scale(1.08, 1.04)`). Boost the background overlay opacity and speculation rim outlines to represent visual thickness increase under touch pressure:
+  ```css
+  .active-lens.is-holding {
+    transform: scale(1.08, 1.04);
+    background-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 
+      inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+      inset 2.5px 4px 0px -2.5px rgba(255, 255, 255, 0.95),
+      var(--glass-shadow);
+  }
+  ```
 - **Click Transitions**: When switching options, trigger a temporary transitioning state that stretches the glass indicator along the movement axis and snaps it back (e.g. keyframes animating scale from `1` to `1.15` and back).
