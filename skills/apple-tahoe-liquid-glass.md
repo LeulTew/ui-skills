@@ -1,22 +1,34 @@
 ---
 name: apple-tahoe-liquid-glass
-description: Implements Apple-style liquid glass refracting buttons and UI components using WebP normal displacement maps, SVG filters, and a 10-layer specular reflection shadow stack.
+description: Implements Apple-style liquid glass refracting buttons and UI components using WebP normal displacement maps, SVG filters, a 10-layer specular reflection shadow stack, and interactive click transitions & hold gestures.
 ---
 
 # Apple Tahoe Liquid Glass Component Skill
 
-Use this skill to implement highly realistic, refracting liquid glass buttons and panels that interact with underlying background elements and images.
+Use this skill to implement highly realistic, refracting liquid glass buttons, toggles, and panels that interact with underlying background elements and images.
 
 ## Core Architectural Rules
 
-### 1. SVG Displacement Refraction (Chrome/Edge Support)
+### 1. SVG Displacement Refraction
 - Define a bounding box filter with `primitiveUnits="objectBoundingBox"`.
 - Use a WebP normal displacement map (base64 encoded) loaded inside `<feImage>` with `preserveAspectRatio="none"`.
-- Chain it directly to `<feDisplacementMap>` with `in="SourceGraphic"`, `scale="0.5"`, `xChannelSelector="R"`, and `yChannelSelector="G"`.
-- **CRITICAL**: Do NOT include `<feGaussianBlur>` or other blurring elements in the refraction chain, as this creates a frosted, opaque overlay instead of a see-through glass pane.
+- **CRITICAL FOR CHROMIUM REFRACTION**: You MUST include a `<feGaussianBlur in="SourceGraphic" stdDeviation="0.01" result="blur" />` to trigger the browser's backdrop copy pass.
+- Chain the `<feDisplacementMap>` to read from the blurred result:
+  ```xml
+  <feGaussianBlur in="SourceGraphic" stdDeviation="0.01" result="blur" />
+  <feDisplacementMap 
+    id="disp" 
+    in="blur" 
+    in2="map" 
+    scale="0.5" 
+    xChannelSelector="R" 
+    yChannelSelector="G" 
+  />
+  ```
 
-### 2. Backdrop Filter (Safari Fallback)
-- For browsers that do not fully support custom SVG displacement filters, provide a fallback using `backdrop-filter: saturate(150%)` or a very minor blur.
+### 2. CSS Backdrop Filter Configuration
+- **CRITICAL**: The CSS `backdrop-filter` property must prefix the custom SVG filter with a standard blur to activate refraction (e.g. `backdrop-filter: blur(8px) url(#filter-id) saturate(150%);`).
+- Controlling Frostiness: Frostiness is controlled strictly by the opacity of the glass backing color, not the filter. To keep the glass transparent and see-through, keep the backing color opacity extremely low (e.g., 1.5% in light mode, 6% in dark mode).
 
 ### 3. Isolated Lens Layer (Preventing Text Ghosting)
 - To prevent text or icons from distorting or ghosting when refracted, the glass lens must be placed in a separate layer (`-z-10` or `position: absolute`) that contains no child content.
@@ -38,5 +50,6 @@ box-shadow:
   0px 6px 16px 0px rgba(0, 0, 0, 0.08); /* Heavy glass shadow depth */
 ```
 
-### 5. High-Transparency Backing
-- To showcase real refraction rather than a frosted overlay, the background color must be highly translucent. Use `rgba(255, 255, 255, 0.015)` (light mode) and `rgba(15, 16, 20, 0.06)` (dark mode) to keep the glass see-through.
+### 5. Interactive Gestures and Snapping transitions
+- **Hold Gestures**: During active drag or press events, apply a slight scale squish (e.g., `transform: scale(0.94, 0.94)`) and a subtle fluid pulse animation to simulate liquid tension.
+- **Click Transitions**: When switching options, trigger a temporary transitioning state that stretches the glass indicator along the movement axis and snaps it back (e.g. keyframes animating scale from `1` to `1.15` and back).
