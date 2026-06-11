@@ -12,10 +12,11 @@ Use this skill to implement highly realistic, refracting liquid glass buttons an
 ### 1. SVG Displacement Refraction (Chrome/Edge Support)
 - Define a bounding box filter with `primitiveUnits="objectBoundingBox"`.
 - Use a WebP normal displacement map (base64 encoded) loaded inside `<feImage>` with `preserveAspectRatio="none"`.
-- Chain it to `<feGaussianBlur>` (for pre-refraction smoothing, set to `stdDeviation="0.01"`) and `<feDisplacementMap>` with `scale="0.5"`, `xChannelSelector="R"`, and `yChannelSelector="G"`.
+- Chain it directly to `<feDisplacementMap>` with `in="SourceGraphic"`, `scale="0.5"`, `xChannelSelector="R"`, and `yChannelSelector="G"`.
+- **CRITICAL**: Do NOT include `<feGaussianBlur>` or other blurring elements in the refraction chain, as this creates a frosted, opaque overlay instead of a see-through glass pane.
 
-### 2. Backdrop Filter Blur (Safari Fallback)
-- For browsers that do not fully support custom SVG displacement filters, provide a fallback using `backdrop-filter: blur(8px) saturate(150%)`.
+### 2. Backdrop Filter (Safari Fallback)
+- For browsers that do not fully support custom SVG displacement filters, provide a fallback using `backdrop-filter: saturate(150%)` or a very minor blur.
 
 ### 3. Isolated Lens Layer (Preventing Text Ghosting)
 - To prevent text or icons from distorting or ghosting when refracted, the glass lens must be placed in a separate layer (`-z-10` or `position: absolute`) that contains no child content.
@@ -38,4 +39,4 @@ box-shadow:
 ```
 
 ### 5. High-Transparency Backing
-- To showcase real refraction rather than a frosted overlay, the background color must be highly translucent. Use `rgba(255, 255, 255, 0.05)` (light mode) and `rgba(15, 16, 20, 0.15)` (dark mode) to keep the glass see-through.
+- To showcase real refraction rather than a frosted overlay, the background color must be highly translucent. Use `rgba(255, 255, 255, 0.015)` (light mode) and `rgba(15, 16, 20, 0.06)` (dark mode) to keep the glass see-through.
