@@ -28,22 +28,22 @@ Use this skill to implement highly realistic, refracting liquid glass buttons, t
   - For large containers and layout cards, keep the `scale` between `0.08` and `0.12` to prevent massive distortion of child text content while retaining beautiful edge refraction.
 
 ### 2. Chromatic Aberration (Rainbow Refraction) on Active Drag
-- To achieve a realistic light splitting (rainbow refraction) when interactive lenses are in active motion or dragged:
+- To achieve a realistic light splitting (100% visible rainbow effect on left and right most curved tips during slide/glide gestures):
   1. Define a secondary filter separating the channels: Red, Green, and Blue.
-  2. Displace each color channel with a slightly different scale (e.g. Red scale `0.45`, Green scale `0.32`, Blue scale `0.19`).
+  2. Displace each color channel with a widely separated scale (e.g. Red scale `0.80`, Green scale `0.38`, Blue scale `-0.04` in the opposite direction).
   3. Keep only the respective color channel for each using `<feColorMatrix>`.
   4. Recombine them back using additive blending via `<feBlend mode="screen">`.
-- This ensures that flat areas remain sharp and aligned, while the normal map borders separate into a natural rainbow color fringe during active gesture movement:
+- This ensures that flat areas remain sharp and aligned, while the curved boundaries split into a highly saturated rainbow fringe during active gesture movement:
   ```xml
   <filter id="displacement-rainbow" primitiveUnits="objectBoundingBox">
     <feImage href={WEBP_MAP} preserveAspectRatio="none" result="map" />
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="0.45" xChannelSelector="R" yChannelSelector="G" result="red_displaced" />
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="0.80" xChannelSelector="R" yChannelSelector="G" result="red_displaced" />
     <feColorMatrix in="red_displaced" type="matrix" values="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="red_only" />
     
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="0.32" xChannelSelector="R" yChannelSelector="G" result="green_displaced" />
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="0.38" xChannelSelector="R" yChannelSelector="G" result="green_displaced" />
     <feColorMatrix in="green_displaced" type="matrix" values="0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0" result="green_only" />
     
-    <feDisplacementMap in="SourceGraphic" in2="map" scale="0.19" xChannelSelector="R" yChannelSelector="G" result="blue_displaced" />
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="-0.04" xChannelSelector="R" yChannelSelector="G" result="blue_displaced" />
     <feColorMatrix in="blue_displaced" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0" result="blue_only" />
     
     <feBlend in="red_only" in2="green_only" mode="screen" result="rg" />
@@ -52,8 +52,8 @@ Use this skill to implement highly realistic, refracting liquid glass buttons, t
   ```
 
 ### 3. CSS Backdrop Filter Configuration
-- **CRITICAL**: The CSS `backdrop-filter` property must reference the custom SVG filter without any blur token to preserve transparency and prevent frostiness (e.g., `backdrop-filter: url(#filter-id) saturate(150%);`).
-- Controlling Transparency: The backing color opacity should remain extremely low (e.g., `1.5%` opacity in light mode, `6%` opacity in dark mode) to act as a crystal clear lens layer.
+- **SWEET-SPOT BLUR**: To prevent white frosty slop while retaining a realistic glass presence, apply a tiny, subtle blur (e.g. `1px` to `2px`) to the CSS `backdrop-filter` property. This creates a very soft, natural light dispersion when crossing images or contrasting elements, while keeping the element almost completely transparent (e.g., `backdrop-filter: blur(1.5px) url(#filter-id) saturate(150%);`).
+- Controlling Transparency: The backing color opacity should remain extremely low (e.g., `1.5%` opacity in light mode, `6%` opacity in dark mode) to act as a see-through glass lens.
 
 ### 4. Pill capsule roundness
 - For Apple-style navigation widgets, buttons, and active tabs, use a fully circular capsule border-radius:
@@ -82,5 +82,5 @@ box-shadow:
 ```
 
 ### 7. Interactive Gestures and Snapping transitions
-- **Hold & Move Expansion (Apple-style Ballooning)**: During active touch, hold, or drag-glide events, expand the active glass lens outward especially vertically to simulate water tension and bubble ballooning (e.g., `transform: scale(1.04, 1.20)`). Under active slide movement, dynamically swap the standard refraction filter with the chromatic aberration filter to project the rainbow effect.
+- **Hold & Move Expansion (Apple-style Ballooning)**: During active touch, hold, or drag-glide events, expand the active glass lens vertically (`transform: scale(1.08, 1.55)`) so that it bulges dynamically above and below the height of the nav bar container (ensuring the container has `overflow: visible`), creating a bulging liquid drop bubble look. Keep the background shadows and borders stable. Under active slide movement, dynamically swap the standard refraction filter with the chromatic aberration filter to project the edge rainbow effect.
 - **Click Transitions**: When switching options, trigger a temporary transitioning state that stretches the glass indicator along the movement axis and snaps it back (e.g. keyframes animating scale from `1` to `1.15` and back).
