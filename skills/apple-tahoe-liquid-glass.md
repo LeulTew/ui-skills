@@ -18,12 +18,14 @@ Use this skill to implement highly realistic, refracting liquid glass buttons, t
     id="disp" 
     in="SourceGraphic" 
     in2="map" 
-    scale="0.05" 
+    scale="0.22" 
     xChannelSelector="R" 
     yChannelSelector="G" 
   />
   ```
-- Keep the `scale` between `0.04` and `0.06` for clean, high-fidelity refraction without pixelation or visual glitches.
+- **Scale Optimization**: Adjust the `scale` based on the bounding box size of the element:
+  - For small interactive elements (e.g., buttons, navigation switchers, active slider pills), keep the `scale` between `0.20` and `0.25` for highly active, visible refraction.
+  - For large containers and layout cards, keep the `scale` between `0.05` and `0.08` to prevent massive distortion of child text content while retaining beautiful edge refraction.
 
 ### 2. CSS Backdrop Filter Configuration
 - **CRITICAL**: The CSS `backdrop-filter` property must reference the custom SVG filter without any blur token to preserve transparency and prevent frostiness (e.g., `backdrop-filter: url(#filter-id) saturate(150%);`).
