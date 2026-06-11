@@ -9,32 +9,37 @@ Use this skill to implement highly realistic, refracting liquid glass buttons, t
 
 ## Core Architectural Rules
 
-### 1. SVG Displacement Refraction
+### 1. SVG Displacement Refraction (Clear & See-Through)
 - Define a bounding box filter with `primitiveUnits="objectBoundingBox"`.
 - Use a WebP normal displacement map (base64 encoded) loaded inside `<feImage>` with `preserveAspectRatio="none"`.
-- **CRITICAL FOR CHROMIUM REFRACTION**: You MUST include a `<feGaussianBlur in="SourceGraphic" stdDeviation="0.01" result="blur" />` to trigger the browser's backdrop copy pass.
-- Chain the `<feDisplacementMap>` to read from the blurred result:
+- **ZERO FROSTINESS REFRACTION**: Direct coordinate displacement should be performed on the sharp background to simulate light bending without frosty blur. Feed `in="SourceGraphic"` directly into the displacement map filter:
   ```xml
-  <feGaussianBlur in="SourceGraphic" stdDeviation="0.01" result="blur" />
   <feDisplacementMap 
     id="disp" 
-    in="blur" 
+    in="SourceGraphic" 
     in2="map" 
-    scale="0.5" 
+    scale="0.05" 
     xChannelSelector="R" 
     yChannelSelector="G" 
   />
   ```
+- Keep the `scale` between `0.04` and `0.06` for clean, high-fidelity refraction without pixelation or visual glitches.
 
 ### 2. CSS Backdrop Filter Configuration
-- **CRITICAL**: The CSS `backdrop-filter` property must prefix the custom SVG filter with a standard blur to activate refraction (e.g. `backdrop-filter: blur(8px) url(#filter-id) saturate(150%);`).
-- Controlling Frostiness: Frostiness is controlled strictly by the opacity of the glass backing color, not the filter. To keep the glass transparent and see-through, keep the backing color opacity extremely low (e.g., 1.5% in light mode, 6% in dark mode).
+- **CRITICAL**: The CSS `backdrop-filter` property must reference the custom SVG filter without any blur token to preserve transparency and prevent frostiness (e.g., `backdrop-filter: url(#filter-id) saturate(150%);`).
+- Controlling Transparency: The backing color opacity should remain extremely low (e.g., `1.5%` opacity in light mode, `6%` opacity in dark mode) to act as a crystal clear lens layer.
 
-### 3. Isolated Lens Layer (Preventing Text Ghosting)
+### 3. Pill capsule roundness
+- For Apple-style navigation widgets, buttons, and active tabs, use a fully circular capsule border-radius:
+  - Container: `border-radius: 9999px;`
+  - Active Lens: `border-radius: 9999px;`
+- This ensures elegant rounded aesthetics, especially in desktop layouts.
+
+### 4. Isolated Lens Layer (Preventing Text Ghosting)
 - To prevent text or icons from distorting or ghosting when refracted, the glass lens must be placed in a separate layer (`-z-10` or `position: absolute`) that contains no child content.
 - The button text/label floats on top, completely clean and crisp.
 
-### 4. Specular Box Shadow Stack
+### 5. Specular Box Shadow Stack
 Create realistic glass thickness and reflections using a 10-layered shadow stack:
 ```css
 box-shadow: 
@@ -50,6 +55,6 @@ box-shadow:
   0px 6px 16px 0px rgba(0, 0, 0, 0.08); /* Heavy glass shadow depth */
 ```
 
-### 5. Interactive Gestures and Snapping transitions
+### 6. Interactive Gestures and Snapping transitions
 - **Hold Gestures**: During active drag or press events, apply a slight scale squish (e.g., `transform: scale(0.94, 0.94)`) and a subtle fluid pulse animation to simulate liquid tension.
 - **Click Transitions**: When switching options, trigger a temporary transitioning state that stretches the glass indicator along the movement axis and snaps it back (e.g. keyframes animating scale from `1` to `1.15` and back).
